@@ -1,0 +1,6 @@
+{
+  "name": "CRM AI Receptionist",
+  "description": "Multi-tenant CRM and AI receptionist with lead scraping, enrichment, multi-channel bot simulations (WhatsApp, Telegram, Webchat), workflow automation, and scheduling integrations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
