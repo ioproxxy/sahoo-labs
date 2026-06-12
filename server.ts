@@ -4,7 +4,7 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
-
+import { WebSocketServer } from "ws";
 dotenv.config();
 
 // Fix __dirname issue in target EMS/CJS environment
@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(express.json());
 
-const PORT = 3000;
+const PORT = 8000;
 
 // Initialize GoogleGenAI
 const hasApiKey = !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== "MY_GEMINI_API_KEY";
@@ -934,6 +934,39 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`[Full-Stack Server] running on http://localhost:${PORT}`);
+const server = app.listen(PORT, "::", () => {
+  console.log(`[Server] Labs API running at http://localhost:${PORT} (IPv6+IPv4)`);
+  console.log(`[Environment] NODE_ENV=${process.env.NODE_ENV || "development"}`);
+});
+
+const wss = new WebSocketServer({
+  server,
+});
+
+wss.on("connection", (ws) => {
+  console.log("[WebSocket] New client connected");
+  ws.on("close", () => {
+    console.log("[WebSocket] Client disconnected");
+  });
+  ws.on("error", (error) => {
+    console.error("[WebSocket Error]", error);
+  });
+});
+
+server.on("error", (error: any) => {
+  if (error.code === "EADDRINUSE") {
+    console.error(`[Error] Port ${PORT} is already in use`);
+  } else {
+    console.error("[Server Error]", error);
+  }
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("[Unhandled Rejection]", promise, reason);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("[Uncaught Exception]", error);
+  process.exit(1);
 });
